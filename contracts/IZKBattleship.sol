@@ -43,7 +43,7 @@ abstract contract IZKBattleship {
     /**
      * Prevent out-of-bounds coordinates for shots
      **/
-    modifier validCoordinates(uint8 _coordinate) {
+    modifier validCoordinate(uint8 _coordinate) {
         require(_coordinate < WIDTH, "Bad coordinate");
         _;
     }
@@ -54,7 +54,7 @@ abstract contract IZKBattleship {
     event GameStarted(uint256 indexed _room);
     event Placed(uint256 indexed _room, bytes _proof);
     event ShotFired(uint256 indexed _room, uint8 _x, uint8 _y, address _by); //emitted on shot
-    event ShotLanded(uint256 indexed _room, uint8 _x, uint8 _y, address _by, uint256 _proof); //emitted on verify
+    event ShotLanded(uint256 indexed _room, uint8 _x, uint8 _y, bytes _proof); //emitted on verify
     event Won(uint256 indexed _room, address _winner);
     
     /// DATA STUCTS ///
@@ -133,11 +133,11 @@ abstract contract IZKBattleship {
         Game storage game = games[_room];
         uint8 by = _creator ? 0 : 1;
         // prevent reuse of place function
-        require(game.boards[by] == bytes(0), "Board placed");
+        //require(game.boards[by] == bytes(0x00), "Board placed");
         // proof of rule compliance
         require(boardProof(_board, _proof), "Board invalid");
         game.boards[by] = _board;
-        emit Placed(_board, _proof);
+        emit Placed(_room, _proof);
     }
     
     /**
