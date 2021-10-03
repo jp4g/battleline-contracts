@@ -125,10 +125,19 @@ abstract contract IZKBattleship {
      * Place pieces on the board and provide cryptographic proof of compliance
      * 
      * @param _room uint256 - the room of the game where the board is being set
-     * 
+     * @param _board bytes - the sha3 hash of the encoded board
+     * @param _proof bytes - cryptographic proof of board valididty
+     * @param _creator bool - if true use index 0 otherwise index 1 for storage in game
      **/
-    function place(uint256 _room, bytes memory _board, bytes memory _proof) internal {
-        
+    function place(uint256 _room, bytes memory _board, bytes memory _proof, bool _creator) internal {
+        Game storage game = games[_room];
+        uint8 by = _creator ? 0 : 1;
+        // prevent reuse of place function
+        require(game.boards[by] == bytes(0), "Board placed");
+        // proof of rule compliance
+        require(boardProof(_board, _proof), "Board invalid");
+        game.boards[by] = _board;
+        emit Placed(_board, _proof);
     }
     
     /**
@@ -163,7 +172,9 @@ abstract contract IZKBattleship {
             : games[_room].hits[1] == WIN_HITS;
     }
     
-    function place(uint256 _room, bytes memory _board, bytes memory _proof) internal 
+    function place(uint256 _room, bytes memory _board, bytes memory _proof) internal {
+
+    } 
     
     /**
      * Authenticate a signed proof of board validity
@@ -189,4 +200,5 @@ abstract contract IZKBattleship {
     function shotProof(bytes memory _board, uint8 _x, uint8 _y, bool _hit, bytes memory _proof) internal view returns (bool) {
         return true;
     }
+    
 }
